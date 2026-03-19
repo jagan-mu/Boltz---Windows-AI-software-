@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Boltz – Windows AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0c10;--surf:#111318;--surf2:#181b22;--bdr:#222630;--acc:#4f8ef7;--acc2:#7c5cfc;--grn:#22d3a1;--red:#f75f5f;--ylw:#f7c948;--txt:#e8eaf0;--mut:#6b7280}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+aside{width:260px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:20px 18px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr)}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px #4f8ef740;flex-shrink:0}
+.logo h1{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+.sec{padding:12px 12px 4px}
+.sec-lbl{font-size:10px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:1px;padding:0 6px 8px;display:flex;align-items:center;gap:6px}
+.mpill{font-size:9px;padding:1px 6px;border-radius:8px;border:1px solid;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:all .3s}
+.mpill.live{color:var(--grn);border-color:#22d3a150;background:#22d3a112}
+.mpill.smart{color:var(--acc);border-color:#4f8ef750;background:#4f8ef712}
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:0 2px}
+.apc{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .15s;font-size:10px;color:var(--mut);text-align:center;user-select:none;position:relative}
+.apc:hover{border-color:var(--acc);color:var(--txt);background:#1a1f2e}
+.apc:active{transform:scale(.96)}
+.apc .ico{font-size:17px}
+.apc .live-dot{position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--grn);opacity:0;transition:opacity .3s}
+.grid-live .live-dot{opacity:1}
+.qcmds{padding:0 10px 6px}
+.qc{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:11.5px;color:var(--mut);transition:all .15s;margin-bottom:1px}
+.qc:hover{background:var(--surf2);color:var(--txt)}
+.qc .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sbar{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.sdot{width:8px;height:8px;border-radius:50%;transition:all .3s}
+.sdot.on{background:var(--grn);box-shadow:0 0 6px var(--grn)}
+.sdot.off{background:var(--ylw);box-shadow:0 0 6px var(--ylw)}
+.stxt{font-size:11px;color:var(--mut)}
+
+/* MAIN */
+main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 22px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:var(--surf);flex-shrink:0}
+.topbar-t{font-size:14px;font-weight:600}
+.topbar-s{font-size:11px;color:var(--mut);margin-top:1px}
+.bdgs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.bdg{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.b-blue{color:var(--acc);border-color:#4f8ef740;background:#4f8ef712}
+.b-purp{color:#a78bfa;border-color:#7c5cfc40;background:#7c5cfc12}
+.b-grn{color:var(--grn);border-color:#22d3a140;background:#22d3a112}
+.b-ylw{color:var(--ylw);border-color:#f7c94840;background:#f7c94812}
+.mbanner{padding:7px 22px;font-size:11px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--bdr);flex-shrink:0;transition:all .4s;line-height:1.5}
+.mbanner.live{background:#0a160a;color:var(--grn)}
+.mbanner.smart{background:#0d1220;color:#7eb3ff}
+.mbanner a{color:inherit;text-decoration:underline;cursor:pointer;opacity:.8}
+.mbanner a:hover{opacity:1}
+
+/* CHAT */
+.chat{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:18px;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+.welcome{text-align:center;padding:32px 20px}
+.welcome h2{font-size:24px;font-weight:700;margin-bottom:8px}
+.welcome h2 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome p{color:var(--mut);font-size:13.5px;max-width:440px;margin:0 auto 10px;line-height:1.6}
+.caps{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0 20px}
+.cap{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--mut);display:flex;align-items:center;gap:5px}
+.cap .ci{font-size:13px}
+.schips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.sc{background:var(--surf2);border:1px solid var(--bdr);border-radius:20px;padding:6px 13px;font-size:11.5px;cursor:pointer;transition:all .15s;color:var(--mut)}
+.sc:hover{border-color:var(--acc);color:var(--txt)}
+.msg{display:flex;gap:10px;max-width:840px}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+.av.b{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 10px #4f8ef730}
+.av.u{background:var(--surf2);border:1px solid var(--bdr)}
+.bub{padding:11px 14px;border-radius:13px;font-size:13px;line-height:1.7;max-width:660px}
+.msg.bot .bub{background:var(--surf2);border:1px solid var(--bdr);border-top-left-radius:4px}
+.msg.user .bub{background:linear-gradient(135deg,#1e3a5f,#1a2a4a);border:1px solid #2a4070;border-top-right-radius:4px}
+
+/* CMD BLOCKS */
+.cblock{background:#0d0f14;border:1px solid var(--bdr);border-radius:8px;margin:9px 0;overflow:hidden}
+.chdr{padding:5px 11px;background:#161920;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.cacts{display:flex;gap:4px}
+.cbtn{background:none;border:1px solid var(--bdr);color:var(--mut);cursor:pointer;font-size:10px;padding:2px 6px;border-radius:4px;transition:all .15s;font-family:inherit}
+.cbtn:hover{background:var(--bdr);color:var(--txt)}
+.rbtn{border-color:#22d3a140;color:var(--grn)}
+.rbtn:hover{background:#22d3a115}
+.cbody{padding:9px 13px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#a8d8a8;white-space:pre-wrap;word-break:break-all}
+.cout{padding:7px 13px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mut);border-top:1px solid var(--bdr);background:#080a0d;white-space:pre-wrap;word-break:break-all;display:none}
+.cout.show{display:block}
+
+/* TOASTS */
+.toast{display:inline-flex;align-items:center;gap:7px;border-radius:8px;padding:7px 11px;margin:5px 0;font-size:12px;border:1px solid;line-height:1.4}
+.toast.pend{background:#0d1220;border-color:#4f8ef740;color:#7eb3ff}
+.toast.ok  {background:#0b1a0b;border-color:#22d3a140;color:var(--grn)}
+.toast.err {background:#1a0b0b;border-color:#f75f5f40;color:#f87171}
+.toast.tip {background:#13110a;border-color:#f7c94840;color:var(--ylw)}
+
+/* TYPING */
+.typing{display:flex;align-items:center;gap:4px;padding:3px 0}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--mut);animation:blink 1.2s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* INPUT */
+.iarea{padding:14px 22px 18px;border-top:1px solid var(--bdr);background:var(--surf);flex-shrink:0}
+.iwrap{background:var(--surf2);border:1px solid var(--bdr);border-radius:13px;display:flex;align-items:flex-end;gap:9px;padding:9px 11px;transition:border-color .15s}
+.iwrap:focus-within{border-color:var(--acc)}
+#inp{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:'Inter',sans-serif;font-size:13px;resize:none;max-height:120px;line-height:1.5}
+#inp::placeholder{color:var(--mut)}
+.sbtn{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0;color:white}
+.sbtn:hover{transform:scale(1.06);box-shadow:0 0 12px #4f8ef750}
+.sbtn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+.ihint{font-size:10px;color:var(--mut);margin-top:7px;text-align:center}
+
+/* PROCESS PANEL */
+.pp{width:210px;background:var(--surf);border-left:1px solid var(--bdr);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.pptit{padding:14px;font-size:12px;font-weight:600;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:6px}
+.pptit .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pplist{flex:1;overflow-y:auto;padding:8px 6px;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.pi{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;margin-bottom:2px;font-size:11px;color:var(--mut);transition:all .15s}
+.pi:hover{background:var(--surf2);color:var(--txt)}
+.pi .ico{font-size:13px}
+.pi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi .ps{width:5px;height:5px;border-radius:50%}
+.ps.on{background:var(--grn)}.ps.idle{background:var(--ylw)}.ps.sim{background:var(--mut)}
+
+/* LAUNCH CARD — info + action button */
+.lcard{margin-top:12px;background:#0d1220;border:1px solid #4f8ef730;border-radius:10px;overflow:hidden}
+.lcard-head{padding:8px 12px;background:#111827;border-bottom:1px solid #4f8ef720;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#7eb3ff;text-transform:uppercase;letter-spacing:.5px}
+.lcard-head .app-icon{font-size:16px}
+.lcard-body{padding:10px 12px;font-size:12px;color:var(--mut);line-height:1.6}
+.lcard-body strong{color:var(--txt)}
+.lcard-foot{padding:8px 12px;border-top:1px solid #4f8ef720;display:flex;align-items:center;gap:8px}
+.launch-now-btn{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:white;cursor:pointer;transition:all .15s;font-family:inherit}
+.launch-now-btn:hover{transform:scale(1.03);box-shadow:0 0 12px #4f8ef750}
+.launch-now-btn:disabled{opacity:.5;transform:none;cursor:not-allowed}
+.launch-status{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div><h1>Boltz</h1><span class="logo-sub">Windows AI Agent</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-lbl">Quick Launch <span class="mpill smart" id="mpill">Smart Mode</span></div>
+    <div class="app-grid" id="agrid">
+      <div class="apc" onclick="chipClick('Notepad','📝')">       <span class="ico">📝</span>Notepad    <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Calculator','🧮')">   <span class="ico">🧮</span>Calculator <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Paint','🎨')">         <span class="ico">🎨</span>Paint      <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Task Manager','📊')">  <span class="ico">📊</span>Task Mgr   <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('File Explorer','📁')"> <span class="ico">📁</span>Explorer   <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Settings','⚙️')">      <span class="ico">⚙️</span>Settings   <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Chrome','🌐')">        <span class="ico">🌐</span>Chrome     <span class="live-dot"></span></div>
+      <div class="apc" onclick="chipClick('Terminal','🖥️')">      <span class="ico">🖥️</span>Terminal   <span class="live-dot"></span></div>
+    </div>
+  </div>
+
+  <div class="sec" style="margin-top:8px">
+    <div class="sec-lbl">Commands</div>
+    <div class="qcmds">
+      <div class="qc" onclick="ask('List all running processes and how to manage them')">          <span class="dot" style="background:var(--acc)"></span>  List processes</div>
+      <div class="qc" onclick="ask('Show detailed Windows system info')">                         <span class="dot" style="background:var(--acc2)"></span> System info</div>
+      <div class="qc" onclick="ask('Open Control Panel')">                                        <span class="dot" style="background:var(--grn)"></span>   Control Panel</div>
+      <div class="qc" onclick="ask('How to schedule a task on Windows?')">                        <span class="dot" style="background:var(--ylw)"></span>  Schedule task</div>
+      <div class="qc" onclick="ask('What are the best video editing apps for Windows?')">         <span class="dot" style="background:var(--red)"></span>   Video editors</div>
+      <div class="qc" onclick="ask('How do I automate file backups on Windows?')">                <span class="dot" style="background:var(--acc)"></span>  Auto-backup</div>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <div class="sdot off" id="sdot"></div>
+    <div class="stxt" id="stxt">AI Mode · Ready</div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+  <div class="topbar">
+    <div>
+      <div class="topbar-t">Boltz Command Center</div>
+      <div class="topbar-s" id="topS">AI-powered Windows automation assistant</div>
+    </div>
+    <div class="bdgs">
+      <div class="bdg b-blue">⚡ AI-Powered</div>
+      <div class="bdg b-purp">🪟 Windows 11</div>
+      <div class="bdg b-grn" id="liveBdg" style="display:none">● Live Agent</div>
+      <div class="bdg b-ylw" id="aiBdg">◎ Smart Mode</div>
+    </div>
+  </div>
+
+  <div class="mbanner smart" id="banner">
+    <span>◎</span>
+    <span id="bannerTxt"><strong>Smart AI Mode</strong> — Full Windows guidance with copy-ready commands. Run <a onclick="ask('How do I start the Boltz local server?')">Start Boltz.bat</a> to also enable live app launching.</span>
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="welcome" id="welcome">
+      <h2>Hi, I'm <span>Boltz</span> ⚡</h2>
+      <p>Your AI assistant for Windows — ask me anything about apps, automation, commands, and system tasks. I give step-by-step answers with ready-to-run commands.</p>
+      <div class="caps">
+        <div class="cap"><span class="ci">📝</span>Open any app</div>
+        <div class="cap"><span class="ci">💠</span>PowerShell scripts</div>
+        <div class="cap"><span class="ci">⊞</span>CMD commands</div>
+        <div class="cap"><span class="ci">🏃</span>Win+R shortcuts</div>
+        <div class="cap"><span class="ci">🗂️</span>File automation</div>
+        <div class="cap"><span class="ci">⏰</span>Task scheduling</div>
+        <div class="cap"><span class="ci">🩺</span>System health</div>
+        <div class="cap"><span class="ci">💡</span>App suggestions</div>
+      </div>
+      <div class="schips">
+        <div class="sc" onclick="ask('Open Notepad')">📝 Open Notepad</div>
+        <div class="sc" onclick="ask('How do I check CPU and RAM usage?')">🩺 CPU & RAM</div>
+        <div class="sc" onclick="ask('Give me a PowerShell script to rename 100 files')">💠 Rename files</div>
+        <div class="sc" onclick="ask('How do I open Task Manager?')">📊 Task Manager</div>
+        <div class="sc" onclick="ask('What are the best free video editors for Windows?')">🎬 Video editors</div>
+        <div class="sc" onclick="ask('How do I schedule a task to run daily on Windows?')">⏰ Schedule tasks</div>
+        <div class="sc" onclick="ask('How do I automate file backups with PowerShell?')">💾 Auto-backup</div>
+        <div class="sc" onclick="ask('How do I speed up a slow Windows PC?')">🚀 Speed up PC</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="iarea">
+    <div class="iwrap">
+      <textarea id="inp" rows="1" placeholder="Ask Boltz anything — open apps, generate commands, automate Windows…" onkeydown="handleKey(event)" oninput="resize(this)"></textarea>
+      <button class="sbtn" id="sbtn" onclick="send()">➤</button>
+    </div>
+    <div class="ihint">Enter to send · Shift+Enter for new line</div>
+  </div>
+</main>
+
+<!-- ═══ PROCESS PANEL ═══ -->
+<div class="pp">
+  <div class="pptit"><span class="dot"></span>Processes</div>
+  <div class="pplist" id="plist">
+    <div class="pi"><span class="ico">🌐</span><span class="nm">chrome.exe</span>  <span class="ps on"></span></div>
+    <div class="pi"><span class="ico">💬</span><span class="nm">slack.exe</span>   <span class="ps on"></span></div>
+    <div class="pi"><span class="ico">💻</span><span class="nm">code.exe</span>    <span class="ps on"></span></div>
+    <div class="pi"><span class="ico">📋</span><span class="nm">explorer.exe</span><span class="ps on"></span></div>
+    <div class="pi"><span class="ico">🔒</span><span class="nm">defender.exe</span><span class="ps on"></span></div>
+    <div class="pi"><span class="ico">📁</span><span class="nm">onedrive.exe</span><span class="ps idle"></span></div>
+    <div class="pi"><span class="ico">🎵</span><span class="nm">spotify.exe</span> <span class="ps idle"></span></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  BOLTZ  —  SMART KNOWLEDGE ENGINE + LIVE SERVER BRIDGE
+// ════════════════════════════════════════════════════════════
+const SERVER = 'http://127.0.0.1:7825';
+let online = false, gone = false;
+let hist = [];   // conversation history
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const $chat   = document.getElementById('chat');
+const $inp    = document.getElementById('inp');
+const $sbtn   = document.getElementById('sbtn');
+const $sdot   = document.getElementById('sdot');
+const $stxt   = document.getElementById('stxt');
+const $banner = document.getElementById('banner');
+const $banT   = document.getElementById('bannerTxt');
+const $livB   = document.getElementById('liveBdg');
+const $aiB    = document.getElementById('aiBdg');
+const $mpill  = document.getElementById('mpill');
+const $agrid  = document.getElementById('agrid');
+
+// ── Server health ─────────────────────────────────────────────────────────────
+async function ping() {
+  try {
+    const r = await fetch(`${SERVER}/ping`, { signal: AbortSignal.timeout(1200) });
+    const d = await r.json();
+    if (d.status === 'ok') { setState(true); return; }
+  } catch {}
+  setState(false);
+}
+function setState(on) {
+  online = on;
+  if (on) {
+    $sdot.className='sdot on'; $stxt.textContent='Connected · Live Agent';
+    $livB.style.display=''; $aiB.style.display='none';
+    $banner.className='mbanner live';
+    $banT.innerHTML='<strong>● Live Agent Mode</strong> — Connected to your PC. App buttons actually launch programs. Commands have a ▶ Run button.';
+    $mpill.textContent='Live Launch'; $mpill.className='mpill live';
+    $agrid.classList.add('grid-live');
+  } else {
+    $sdot.className='sdot off'; $stxt.textContent='Smart Mode · Ready';
+    $livB.style.display='none'; $aiB.style.display='';
+    $banner.className='mbanner smart';
+    $banT.innerHTML='<strong>◎ Smart AI Mode</strong> — Full Windows guidance with copy-ready commands. <a onclick="ask(\'How do I start the Boltz local server?\')">Run Start Boltz.bat</a> to also enable live app launching.';
+    $mpill.textContent='Smart Mode'; $mpill.className='mpill smart';
+    $agrid.classList.remove('grid-live');
+  }
+}
+ping(); setInterval(ping, 8000);
+
+// ── Server API ────────────────────────────────────────────────────────────────
+async function apiChat(messages) {
+  const r = await fetch(`${SERVER}/chat`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ system: SYS_PROMPT, messages, max_tokens: 1200 })
+  });
+  return r.json();
+}
+async function apiLaunch(app) {
+  const r = await fetch(`${SERVER}/run`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({app})});
+  return r.json();
+}
+async function apiPS(cmd) {
+  const r = await fetch(`${SERVER}/ps`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})});
+  return r.json();
+}
+async function apiCMD(cmd) {
+  const r = await fetch(`${SERVER}/cmd`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})});
+  return r.json();
+}
+
+// ── System prompt ─────────────────────────────────────────────────────────────
+const SYS_PROMPT = `You are Boltz, an expert Windows AI assistant embedded in a local app.
+
+SERVER STATUS is injected as [SERVER:online] or [SERVER:offline] in each message.
+
+When SERVER is ONLINE:  When the user wants to open an app, FIRST give a 1-sentence description of the app, then show 2-3 quick ways to open it manually (keyboard shortcut, Win+R command, Start menu). Then end with a [LAUNCH:appname] tag on its own line so the server physically starts it.
+When SERVER is OFFLINE: give full manual instructions (shortcuts, Run dialog, Start menu) with no LAUNCH tags.
+
+Always format commands using these special tags — they render as styled, copyable, runnable blocks:
+  [CMD]command[/CMD]   → Command Prompt block
+  [PS]command[/PS]     → PowerShell block
+  [RUN]command[/RUN]   → Win+R Run-dialog block
+
+Capabilities to always deliver:
+1. OPEN APPS — tell the user exactly how to open any Windows application, multiple methods (shortcut, Run dialog, search, CLI)
+2. GENERATE COMMANDS — provide precise PowerShell, CMD, and Win+R commands with explanations
+3. AUTOMATION — help with file operations, backups, scheduling, scripting, workflows
+4. APP SUGGESTIONS — recommend the best tools for any task (video editing, coding, productivity, etc.)
+5. SYSTEM ADMIN — CPU/RAM/disk usage, process management, services, startup items, event logs
+6. EDUCATION — explain Windows features, settings, registry, Group Policy, etc.
+
+Supported launchable apps: Notepad, Calculator, Paint, Task Manager, File Explorer, Settings, PowerShell, CMD, Terminal, Control Panel, Chrome, Firefox, Edge, VS Code, Visual Studio, Word, Excel, PowerPoint, Outlook, Spotify, VLC, Steam, Discord, Zoom, Teams, Regedit, Device Manager, Services, Event Viewer, Task Scheduler, Snipping Tool, System Info, and many more.
+
+Be concise, practical, and direct. Use **bold** for key terms. Always give ready-to-use answers.`;
+
+// ════════════════════════════════════════════════════════════
+//  BUILT-IN KNOWLEDGE ENGINE  (works without server / AI)
+//  Used when server is offline as a rich fallback.
+// ════════════════════════════════════════════════════════════
+const KB = {
+  // ── App launch instructions ──────────────────────────────────────────────
+  open: {
+    notepad: () => `**Notepad** — here's how to open it:\n\n[RUN]notepad[/RUN]\n\n[CMD]start notepad.exe[/CMD]\n\nOr press **Win + S**, type *Notepad*, and hit Enter. It's also pinnable to your taskbar for one-click access.`,
+    calculator: () => `**Calculator** — open it instantly:\n\n[RUN]calc[/RUN]\n\n[PS]Start-Process calc.exe[/PS]\n\nTip: search "Calculator" in the Start menu. Windows 11 has scientific, graphing, and programmer modes.`,
+    paint: () => `**Paint** — open it:\n\n[RUN]mspaint[/RUN]\n\n[CMD]start mspaint.exe[/CMD]\n\nAlternatively search "Paint" in Start. For advanced editing, consider **Paint 3D** (search it in the Store) or **GIMP** (free).`,
+    'task manager': () => `**Task Manager** — several ways:\n\n• **Ctrl + Shift + Esc** (fastest shortcut)\n• **Ctrl + Alt + Del** → Task Manager\n• Right-click the taskbar → Task Manager\n\n[RUN]taskmgr[/RUN]\n\nUse the **Details** tab to see all processes and the **Startup** tab to control boot programs.`,
+    'file explorer': () => `**File Explorer** — open it:\n\n• Press **Win + E** (fastest)\n• Click the folder icon in the taskbar\n\n[RUN]explorer[/RUN]\n\n[PS]Start-Process explorer.exe[/PS]\n\nPin frequently used folders to **Quick Access** by right-clicking them → Pin to Quick Access.`,
+    settings: () => `**Windows Settings** — open it:\n\n• Press **Win + I** (fastest)\n• Start menu → ⚙️ Settings\n\n[RUN]ms-settings:[/RUN]\n\nDirect shortcuts:\n[RUN]ms-settings:display[/RUN]\n[RUN]ms-settings:bluetooth[/RUN]\n[RUN]ms-settings:windowsupdate[/RUN]`,
+    chrome: () => `**Google Chrome** — if installed:\n\n[CMD]start chrome[/CMD]\n\nOpen a specific URL:\n[CMD]start chrome https://google.com[/CMD]\n\nNot installed? Download from **google.com/chrome**. For faster browsing try **Edge** (pre-installed) or **Firefox**.`,
+    terminal: () => `**Windows Terminal** — open it:\n\n• Right-click the desktop → Open in Terminal\n• Press **Win + X** → Terminal\n\n[RUN]wt[/RUN]\n\n[PS]Start-Process wt.exe[/PS]\n\nWindows Terminal supports PowerShell, CMD, and WSL tabs in one window.`,
+    powershell: () => `**PowerShell** — open it:\n\n• Press **Win + X** → Windows PowerShell\n• Search "PowerShell" in Start\n\n[RUN]powershell[/RUN]\n\nTo run as **Administrator**:\n[CMD]powershell -Command "Start-Process powershell -Verb RunAs"[/CMD]`,
+    cmd: () => `**Command Prompt** — open it:\n\n[RUN]cmd[/RUN]\n\nAs Administrator:\n[CMD]runas /user:Administrator cmd[/CMD]\n\nOr press **Win + R**, type *cmd*, then **Ctrl + Shift + Enter** to open as admin.`,
+    regedit: () => `**Registry Editor** — open it (admin required):\n\n[RUN]regedit[/RUN]\n\n⚠️ Always back up the registry before editing:\n[PS]reg export HKLM C:\\backup_hklm.reg[/PS]\n\nNavigate with **Ctrl+F** to search for keys.`,
+    'control panel': () => `**Control Panel** — open it:\n\n[RUN]control[/RUN]\n\nDirect panels:\n[RUN]appwiz.cpl[/RUN]\n[RUN]ncpa.cpl[/RUN]\n[RUN]sysdm.cpl[/RUN]\n\nNote: Most settings have moved to **Win + I** (Settings) in Windows 11.`,
+    'vs code': () => `**Visual Studio Code** — if installed:\n\n[CMD]code .[/CMD]\n\nNot installed? Download free at **code.visualstudio.com**. It supports 50+ languages, Git, debugging, and thousands of extensions.`,
+    spotify: () => `**Spotify** — if installed, search "Spotify" in Start or:\n[CMD]start spotify:[/CMD]\n\nAlternatively use the **web player** at open.spotify.com in any browser.`,
+  },
+
+  // ── System info / performance ─────────────────────────────────────────────
+  system: () => `**Windows System Info** — commands to check your PC:\n\n**Basic system summary:**\n[PS]Get-ComputerInfo | Select-Object CsName, OsName, OsVersion, CsTotalPhysicalMemory[/PS]\n\n**CPU usage live:**\n[PS]Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 Name, CPU, WorkingSet[/PS]\n\n**Disk space:**\n[PS]Get-PSDrive -PSProvider FileSystem | Select-Object Name, Used, Free[/PS]\n\n**Uptime:**\n[PS](Get-Date) - (gcim Win32_OperatingSystem).LastBootUpTime[/PS]\n\n[RUN]msinfo32[/RUN]`,
+
+  // ── Task management ───────────────────────────────────────────────────────
+  processes: () => `**Managing Processes** in Windows:\n\n**List all running processes:**\n[PS]Get-Process | Sort-Object CPU -Descending | Select-Object -First 20 Name, Id, CPU, WorkingSet[/PS]\n\n**Kill a process by name:**\n[PS]Stop-Process -Name "notepad" -Force[/PS]\n\n**Kill by PID:**\n[CMD]taskkill /PID 1234 /F[/CMD]\n\n**Find what's using a port:**\n[CMD]netstat -ano | findstr :8080[/CMD]\n\nOpen **Task Manager** with **Ctrl + Shift + Esc** for a live GUI view.`,
+
+  // ── Scheduling ────────────────────────────────────────────────────────────
+  schedule: () => `**Scheduling Tasks** on Windows:\n\n**Create a daily task via PowerShell:**\n[PS]$action = New-ScheduledTaskAction -Execute "notepad.exe"\n$trigger = New-ScheduledTaskTrigger -Daily -At "9:00AM"\nRegister-ScheduledTask -TaskName "MyDailyTask" -Action $action -Trigger $trigger[/PS]\n\n**Open Task Scheduler GUI:**\n[RUN]taskschd.msc[/RUN]\n\n**List all scheduled tasks:**\n[PS]Get-ScheduledTask | Where-Object State -ne "Disabled" | Select-Object TaskName, State[/PS]\n\n**Delete a task:**\n[PS]Unregister-ScheduledTask -TaskName "MyDailyTask" -Confirm:$false[/PS]`,
+
+  // ── Backups ───────────────────────────────────────────────────────────────
+  backup: () => `**Automating File Backups** on Windows:\n\n**Simple folder backup script:**\n[PS]$src = "C:\\Users\\$env:USERNAME\\Documents"\n$dst = "D:\\Backup\\Documents_$(Get-Date -Format 'yyyy-MM-dd')"\nCopy-Item -Path $src -Destination $dst -Recurse -Force\nWrite-Host "Backup complete: $dst"[/PS]\n\n**Schedule it daily** (runs at 8 AM):\n[PS]$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\\backup.ps1"\n$trigger = New-ScheduledTaskTrigger -Daily -At "08:00AM"\nRegister-ScheduledTask -TaskName "DailyBackup" -Action $action -Trigger $trigger[/PS]\n\n**Built-in Windows Backup:** Win + I → System → Storage → Advanced storage settings → Backup options`,
+
+  // ── File operations ───────────────────────────────────────────────────────
+  rename: () => `**Batch Renaming Files** with PowerShell:\n\n**Add prefix to all files in a folder:**\n[PS]Get-ChildItem "C:\\folder\\*" | Rename-Item -NewName { "prefix_" + $_.Name }[/PS]\n\n**Rename by number (001.jpg, 002.jpg…):**\n[PS]$i=1; Get-ChildItem "C:\\photos\\*.jpg" | ForEach-Object {\n  Rename-Item $_ -NewName ("{0:D3}.jpg" -f $i++)\n}[/PS]\n\n**Replace text in filename:**\n[PS]Get-ChildItem "C:\\folder" | ForEach-Object {\n  Rename-Item $_ ($_.Name -replace "old","new")\n}[/PS]`,
+
+  // ── CPU / RAM ─────────────────────────────────────────────────────────────
+  cpu: () => `**Checking CPU & RAM Usage:**\n\n**Live top processes by CPU:**\n[PS]while ($true) { Get-Process | Sort-Object CPU -Desc | Select -First 5 Name,CPU; Start-Sleep 2; Clear-Host }[/PS]\n\n**RAM usage summary:**\n[PS]$os = Get-CimInstance Win32_OperatingSystem\n$used = [math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory)/1MB,2)\n$total = [math]::Round($os.TotalVisibleMemorySize/1MB,2)\nWrite-Host "RAM Used: $used GB / $total GB"[/PS]\n\n**Open Resource Monitor (GUI):**\n[RUN]resmon[/RUN]\n\n**Open Performance Monitor:**\n[RUN]perfmon[/RUN]`,
+
+  // ── Speed up PC ───────────────────────────────────────────────────────────
+  speedup: () => `**Speed Up a Slow Windows PC** — proven steps:\n\n**1. Disable startup programs:**\n[PS]Get-CimInstance Win32_StartupCommand | Select-Object Name, Command | Format-Table[/PS]\nOr use **Task Manager → Startup** tab.\n\n**2. Clean temp files:**\n[PS]Remove-Item "$env:TEMP\\*" -Recurse -Force -ErrorAction SilentlyContinue\nWrite-Host "Temp files cleared"[/PS]\n\n**3. Defrag HDD (skip for SSD):**\n[CMD]defrag C: /U /V[/CMD]\n\n**4. Check for malware:**\n[PS]Start-MpScan -ScanType QuickScan[/PS]\n\n**5. Adjust visual effects for performance:**\n[RUN]sysdm.cpl[/RUN] → Advanced → Performance Settings → "Adjust for best performance"`,
+
+  // ── Networking ────────────────────────────────────────────────────────────
+  network: () => `**Windows Networking Commands:**\n\n**Your IP address:**\n[CMD]ipconfig /all[/CMD]\n\n**Flush DNS cache:**\n[CMD]ipconfig /flushdns[/CMD]\n\n**Ping a host:**\n[CMD]ping google.com -n 4[/CMD]\n\n**Trace route:**\n[CMD]tracert google.com[/CMD]\n\n**Open ports / connections:**\n[CMD]netstat -an | findstr LISTENING[/CMD]\n\n**Reset network stack:**\n[CMD]netsh winsock reset\nnetsh int ip reset\nipconfig /flushdns[/CMD]`,
+
+  // ── App recommendations ───────────────────────────────────────────────────
+  apps: {
+    video: () => `**Best Video Editors for Windows:**\n\n**Free:**\n• **DaVinci Resolve** — professional-grade, free, used in Hollywood\n• **Kdenlive** — open source, great for beginners\n• **OpenShot** — simple drag-and-drop editing\n• **Windows Video Editor** (built-in) — basic but quick\n\n**Paid:**\n• **Adobe Premiere Pro** — industry standard\n• **Vegas Pro** — longtime Windows favourite\n• **CapCut Desktop** — trending for social content\n\nInstall DaVinci Resolve free: **blackmagicdesign.com/products/davinciresolve**`,
+    photo: () => `**Best Photo Editors for Windows:**\n\n**Free:**\n• **GIMP** — full Photoshop alternative\n• **Paint.NET** — lightweight, fast\n• **Darktable** — for RAW photography\n• **Canva Desktop** — great for design\n\n**Paid:**\n• **Adobe Photoshop** — industry standard\n• **Affinity Photo 2** — one-time purchase alternative to Photoshop\n• **Capture One** — professional RAW editor`,
+    code: () => `**Best Code Editors / IDEs for Windows:**\n\n**Free:**\n• **VS Code** — most popular, supports all languages → code.visualstudio.com\n• **Visual Studio Community** — full IDE for .NET, C++\n• **JetBrains IDEs** (Community editions) — IntelliJ, PyCharm, WebStorm\n• **Notepad++** — lightweight text/code editor\n\n**Download VS Code:**\n[CMD]winget install Microsoft.VisualStudioCode[/CMD]`,
+    browser: () => `**Best Browsers for Windows:**\n\n• **Chrome** — most popular, great extensions\n• **Firefox** — privacy-focused, open source\n• **Edge** — pre-installed, excellent performance, built-in AI\n• **Brave** — blocks ads/trackers by default\n• **Opera GX** — gamer-focused with RAM limiting\n\n**Install via winget:**\n[CMD]winget install Google.Chrome[/CMD]\n[CMD]winget install Mozilla.Firefox[/CMD]`,
+    productivity: () => `**Best Productivity Apps for Windows:**\n\n**Note-taking:** Notion, Obsidian (free), OneNote (built-in)\n**To-do:** Microsoft To Do (free), Todoist, Trello\n**Communication:** Slack, Teams (built-in), Discord\n**Time tracking:** Toggl, Clockify (free)\n**Screen capture:** ShareX (free, powerful), Snagit\n\n**Install Snipping Tool shortcut:** **Win + Shift + S**\n\n**Install apps fast with winget:**\n[CMD]winget search notion[/CMD]`,
+  },
+
+  // ── Control Panel shortcuts ───────────────────────────────────────────────
+  controlpanel: () => `**Useful Control Panel & Run Dialog Shortcuts:**\n\n[RUN]appwiz.cpl[/RUN] — Installed programs (Add/Remove)\n[RUN]ncpa.cpl[/RUN] — Network connections\n[RUN]sysdm.cpl[/RUN] — System properties\n[RUN]devmgmt.msc[/RUN] — Device Manager\n[RUN]services.msc[/RUN] — Windows Services\n[RUN]eventvwr.msc[/RUN] — Event Viewer\n[RUN]diskmgmt.msc[/RUN] — Disk Management\n[RUN]gpedit.msc[/RUN] — Group Policy Editor\n[RUN]regedit[/RUN] — Registry Editor`,
+
+  // ── Winget package manager ────────────────────────────────────────────────
+  winget: () => `**winget** — Windows Package Manager (like apt/brew for Windows):\n\n**Search for an app:**\n[CMD]winget search vlc[/CMD]\n\n**Install an app:**\n[CMD]winget install VideoLAN.VLC[/CMD]\n\n**Update all installed apps:**\n[CMD]winget upgrade --all[/CMD]\n\n**Uninstall:**\n[CMD]winget uninstall VideoLAN.VLC[/CMD]\n\nwinget comes pre-installed on Windows 11. Common installs:\n[CMD]winget install Google.Chrome Microsoft.VisualStudioCode 7zip.7zip[/CMD]`,
+};
+
+// ── Knowledge router: match question to KB answer ─────────────────────────────
+function kbAnswer(q) {
+  const t = q.toLowerCase();
+  // Open app?
+  const openMatch = t.match(/open|launch|start|run|how.*use|where.*find/);
+  if (openMatch) {
+    for (const [key, fn] of Object.entries(KB.open)) {
+      if (t.includes(key)) return fn();
+    }
+  }
+  if (/notepad/.test(t))          return KB.open.notepad();
+  if (/calculat/.test(t))         return KB.open.calculator();
+  if (/\bpaint\b/.test(t))        return KB.open.paint();
+  if (/task manager/.test(t))     return KB.open['task manager']();
+  if (/explorer|file.*explor/.test(t)) return KB.open['file explorer']();
+  if (/\bsettings\b/.test(t))     return KB.open.settings();
+  if (/\bchrome\b/.test(t))       return KB.open.chrome();
+  if (/terminal|wt\.exe/.test(t)) return KB.open.terminal();
+  if (/powershell/.test(t))       return KB.open.powershell();
+  if (/\bcmd\b|command prompt/.test(t)) return KB.open.cmd();
+  if (/regedit|registry/.test(t)) return KB.open.regedit();
+  if (/control panel/.test(t))    return KB.open['control panel']();
+  if (/vs code|vscode|visual studio code/.test(t)) return KB.open['vs code']();
+  if (/spotify/.test(t))          return KB.open.spotify();
+  // Topics
+  if (/cpu|ram|memory|usage|performance/.test(t)) return KB.cpu();
+  if (/process|running|kill|task/.test(t))        return KB.processes();
+  if (/schedul|cron|daily|automat.*run/.test(t))  return KB.schedule();
+  if (/backup|back.*up|copy.*file/.test(t))       return KB.backup();
+  if (/rename|batch.*file|file.*rename/.test(t))  return KB.rename();
+  if (/slow|speed.*up|faster|optim/.test(t))      return KB.speedup();
+  if (/network|ip|dns|ping|wifi|internet/.test(t)) return KB.network();
+  if (/system.*info|sysinfo|pc.*info/.test(t))    return KB.system();
+  if (/control panel|cpl|msc|shortcut/.test(t))  return KB.controlpanel();
+  if (/winget|package.*manager|install.*app/.test(t)) return KB.winget();
+  // App recommendations
+  if (/video.*edit|edit.*video|premiere|davinci/.test(t)) return KB.apps.video();
+  if (/photo.*edit|edit.*photo|gimp|photoshop/.test(t))   return KB.apps.photo();
+  if (/code editor|ide|\bvscode\b|coding app/.test(t))    return KB.apps.code();
+  if (/browser|chrome.*alt|firefox/.test(t))              return KB.apps.browser();
+  if (/productivity|note.*tak|todo|notion/.test(t))       return KB.apps.productivity();
+  // Generic Windows help
+  if (/how.*start.*boltz|boltz.*server|local server/.test(t))
+    return `**Starting the Boltz Local Server:**\n\n1. Download all 3 files (**boltz.html**, **boltz_server.py**, **Start Boltz.bat**) into one folder\n2. Double-click **Start Boltz.bat**\n3. Enter your Anthropic API key when prompted (get one at console.anthropic.com)\n4. Your browser opens automatically at http://127.0.0.1:7825\n\nOnce running, app buttons actually launch programs on your PC and commands get a **▶ Run** button.\n\n**Requirements:** Python 3.8+ · pip install requests`;
+  return null; // No KB match → fall through to "thinking" mode
+}
+
+// ── Smart offline response ────────────────────────────────────────────────────
+function smartRespond(q) {
+  const ans = kbAnswer(q);
+  if (ans) return ans;
+  // Generic helpful fallback
+  return `I'm in **Smart Mode** (local server not running) and don't have a built-in answer for that specific question.\n\n**What I can help with right now:**\n\n• Opening any Windows app (try "Open Notepad" or "Open Chrome")\n• PowerShell & CMD commands — try "list processes" or "check CPU usage"\n• File automation — try "rename 100 files" or "automate backups"\n• App recommendations — try "best video editor for Windows"\n• System admin — try "speed up my PC" or "network commands"\n• Task scheduling — try "how to schedule a daily task"\n\nFor full AI conversation, run **Start Boltz.bat** to connect the local server. Your Anthropic API key is required.`;
+}
+
+// ════════════════════════════════════════════════════════════
+//  FORMAT  —  render [CMD], [PS], [RUN], [LAUNCH] tags
+// ════════════════════════════════════════════════════════════
+const esc  = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escA = t => t.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+
+function fmt(text) {
+  text = text.replace(/\[CMD\]([\s\S]*?)\[\/CMD\]/g, (_,c) => {
+    const id='c'+Math.random().toString(36).slice(2,7);
+    const rb = online ? `<button class="cbtn rbtn" onclick="runBlock('${id}','${escA(c.trim())}','cmd')">▶ Run</button>` : '';
+    return `<div class="cblock"><div class="chdr"><span>⊞ Command Prompt</span><div class="cacts">${rb}<button class="cbtn" onclick="cp(this,\`${escA(c.trim())}\`)">Copy</button></div></div><div class="cbody">${esc(c.trim())}</div><div class="cout" id="${id}"></div></div>`;
+  });
+  text = text.replace(/\[PS\]([\s\S]*?)\[\/PS\]/g, (_,c) => {
+    const id='p'+Math.random().toString(36).slice(2,7);
+    const rb = online ? `<button class="cbtn rbtn" onclick="runBlock('${id}','${escA(c.trim())}','ps')">▶ Run</button>` : '';
+    return `<div class="cblock"><div class="chdr" style="color:#a78bfa"><span>💠 PowerShell</span><div class="cacts">${rb}<button class="cbtn" onclick="cp(this,\`${escA(c.trim())}\`)">Copy</button></div></div><div class="cbody" style="color:#c4b5fd">${esc(c.trim())}</div><div class="cout" id="${id}"></div></div>`;
+  });
+  text = text.replace(/\[RUN\]([\s\S]*?)\[\/RUN\]/g, (_,c) =>
+    `<div class="cblock"><div class="chdr" style="color:#f7c948"><span>🏃 Run (Win+R)</span><button class="cbtn" onclick="cp(this,\`${escA(c.trim())}\`)">Copy</button></div><div class="cbody" style="color:#fde68a">${esc(c.trim())}</div></div>`
+  );
+  text = text.replace(/\[LAUNCH:([^\]]+)\]/gi, (_,app) => online
+    ? `<div class="toast pend" data-launch="${app}">🚀 Launching <strong>${app}</strong>…</div>`
+    : `<div class="toast tip">💡 Run <strong>Start Boltz.bat</strong> to launch <strong>${app}</strong> directly on your PC</div>`
+  );
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\n/g,'<br>');
+  return text;
+}
+
+async function flushLaunches(bub) {
+  for (const el of bub.querySelectorAll('[data-launch]')) {
+    const app = el.getAttribute('data-launch');
+    try {
+      const r = await apiLaunch(app);
+      if (r.success) { el.className='toast ok'; el.innerHTML=`✅ <strong>${app}</strong> launched on your PC`; addProc(app,'🔷',true); }
+      else           { el.className='toast err'; el.innerHTML=`⚠ Couldn't open <strong>${app}</strong>: ${r.detail}`; }
+    } catch { el.className='toast err'; el.innerHTML=`⚠ Server error launching <strong>${app}</strong>`; }
+    el.removeAttribute('data-launch');
+  }
+}
+
+async function runBlock(id, cmd, type) {
+  const out = document.getElementById(id);
+  out.className='cout show'; out.textContent='Running…'; out.style.color='var(--mut)';
+  try {
+    const r = type==='ps' ? await apiPS(cmd) : await apiCMD(cmd);
+    out.textContent = r.output || (r.success ? '(no output)' : 'Error');
+    out.style.color = r.success ? '#a8d8a8' : 'var(--red)';
+  } catch { out.textContent='Server error'; out.style.color='var(--red)'; }
+}
+
+function cp(btn,text) {
+  navigator.clipboard.writeText(text).then(()=>{ btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',1500); });
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function rmWelcome() { if(!gone){document.getElementById('welcome')?.remove();gone=true;} }
+
+function addMsg(role, html) {
+  rmWelcome();
+  const w=document.createElement('div'); w.className=`msg ${role==='user'?'user':'bot'}`;
+  const a=document.createElement('div'); a.className=`av ${role==='user'?'u':'b'}`; a.textContent=role==='user'?'👤':'⚡';
+  const b=document.createElement('div'); b.className='bub'; b.innerHTML=html;
+  w.appendChild(a); w.appendChild(b); $chat.appendChild(w); $chat.scrollTop=$chat.scrollHeight;
+  return b;
+}
+
+function showTyping() {
+  rmWelcome();
+  const w=document.createElement('div'); w.className='msg bot'; w.id='typ';
+  const a=document.createElement('div'); a.className='av b'; a.textContent='⚡';
+  const b=document.createElement('div'); b.className='bub';
+  b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  w.appendChild(a); w.appendChild(b); $chat.appendChild(w); $chat.scrollTop=$chat.scrollHeight;
+  return w;
+}
+
+const ICONS={notepad:'📝',calculator:'🧮',paint:'🎨',chrome:'🌐',firefox:'🦊',explorer:'📁',terminal:'🖥️',settings:'⚙️','task manager':'📊',powershell:'💠',cmd:'⊞',code:'💻',word:'📄',excel:'📊',powerpoint:'📑',spotify:'🎵',vlc:'🎬',steam:'🎮',discord:'💬',zoom:'📹',teams:'📹'};
+function addProc(name,icon,live){
+  const k=name.toLowerCase();
+  const ico=(icon==='🔷'||!icon)?(Object.entries(ICONS).find(([i])=>k.includes(i))?.[1]||'🔷'):icon;
+  const l=document.getElementById('plist');
+  const el=document.createElement('div'); el.className='pi';
+  el.innerHTML=`<span class="ico">${ico}</span><span class="nm">${k.replace(/ /g,'')}.exe</span><span class="ps ${live?'on':'sim'}"></span>`;
+  l.insertBefore(el,l.firstChild);
+  if(live) setTimeout(()=>el.querySelector('.ps').className='ps idle',5000);
+}
+
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function ask(t){$inp.value=t;send();}
+
+// ── Per-app info shown BEFORE launching ───────────────────────────────────────
+const APP_INFO = {
+  'Notepad': {
+    desc: 'A lightweight built-in text editor — great for quick notes, scripts, and config files.',
+    shortcuts: ['Win + S → type "Notepad" → Enter', 'Win + R → type <code>notepad</code> → Enter'],
+    tip: 'Notepad supports UTF-8 and can open .log files with auto-timestamps (add <code>.LOG</code> on line 1).'
+  },
+  'Calculator': {
+    desc: 'Windows built-in calculator with Standard, Scientific, Programmer, and Graphing modes.',
+    shortcuts: ['Win + S → type "Calculator"', 'Win + R → type <code>calc</code> → Enter'],
+    tip: 'Switch modes from the ☰ menu. Programmer mode supports HEX, DEC, OCT, and BIN.'
+  },
+  'Paint': {
+    desc: 'Classic bitmap image editor — good for quick screenshots, annotations, and simple drawings.',
+    shortcuts: ['Win + S → type "Paint"', 'Win + R → type <code>mspaint</code> → Enter'],
+    tip: 'Use <strong>Win + Shift + S</strong> to snip a screen region and paste directly into Paint.'
+  },
+  'Task Manager': {
+    desc: 'Monitor CPU, RAM, disk, network usage; kill processes; manage startup programs.',
+    shortcuts: ['Ctrl + Shift + Esc (fastest)', 'Ctrl + Alt + Del → Task Manager', 'Right-click taskbar → Task Manager'],
+    tip: 'The <strong>Startup</strong> tab lets you disable programs that slow down boot time.'
+  },
+  'File Explorer': {
+    desc: 'Browse, copy, move, rename, and manage all files and folders on your PC.',
+    shortcuts: ['Win + E (fastest)', 'Click folder icon in taskbar', 'Win + R → type <code>explorer</code>'],
+    tip: 'Pin your most-used folders to <strong>Quick Access</strong> (right-click → Pin to Quick access).'
+  },
+  'Settings': {
+    desc: 'Central hub for all Windows configuration — display, Bluetooth, updates, accounts, and more.',
+    shortcuts: ['Win + I (fastest)', 'Start menu → ⚙ Settings'],
+    tip: 'Use <strong>Win + I</strong> then type in the search box to jump directly to any setting.'
+  },
+  'Chrome': {
+    desc: 'Google Chrome — the most popular browser, known for its speed, extensions, and DevTools.',
+    shortcuts: ['Win + S → type "Chrome"', 'Pin it to taskbar for one-click access'],
+    tip: 'Press <strong>Ctrl + T</strong> for a new tab, <strong>Ctrl + Shift + N</strong> for Incognito mode.'
+  },
+  'Terminal': {
+    desc: 'Windows Terminal — a modern multi-tab shell that runs PowerShell, CMD, and WSL side by side.',
+    shortcuts: ['Win + X → Terminal', 'Right-click desktop → Open in Terminal', 'Win + R → type <code>wt</code>'],
+    tip: 'Press <strong>Ctrl + Shift + T</strong> to open a new tab, or <strong>Ctrl + ,</strong> to open settings.'
+  },
+};
+
+// ── Launch an app and update the UI ───────────────────────────────────────────
+async function launchNow(app, icon, btn, statusEl) {
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Launching…';
+  statusEl.textContent = '';
+  const r = await apiLaunch(app);
+  if (r.success) {
+    btn.innerHTML = `✅ Launched`;
+    btn.style.background = 'linear-gradient(135deg,#22d3a1,#16a37a)';
+    statusEl.innerHTML = `<span style="color:var(--grn)">${icon} <strong>${app}</strong> is now running on your PC</span>`;
+    addProc(app, icon, true);
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Try Again';
+    statusEl.innerHTML = `<span style="color:var(--red)">⚠ ${r.detail}</span>`;
+  }
+}
+
+// ── Build the info card HTML ───────────────────────────────────────────────────
+function buildInfoCard(app, icon) {
+  const info = APP_INFO[app];
+  const id = 'lbtn_' + Math.random().toString(36).slice(2,7);
+  const sid = 'lsts_' + Math.random().toString(36).slice(2,7);
+
+  // Fallback for apps not in APP_INFO
+  if (!info) {
+    return `<div class="lcard">
+      <div class="lcard-head"><span class="app-icon">${icon}</span>${app}</div>
+      <div class="lcard-body">Ready to open <strong>${app}</strong> on your PC.</div>
+      <div class="lcard-foot">
+        <button class="launch-now-btn" id="${id}" onclick="(async()=>{const b=document.getElementById('${id}');const s=document.getElementById('${sid}');await launchNow('${app}','${icon}',b,s);})()">🚀 Launch ${app}</button>
+        <span class="launch-status" id="${sid}"></span>
+      </div>
+    </div>`;
+  }
+
+  const shortcuts = info.shortcuts.map(s => `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:var(--acc);flex-shrink:0">→</span><span>${s}</span></div>`).join('');
+
+  return `<div class="lcard">
+    <div class="lcard-head"><span class="app-icon">${icon}</span>About ${app}</div>
+    <div class="lcard-body">
+      <div style="margin-bottom:8px">${info.desc}</div>
+      <div style="margin-bottom:6px"><strong>Ways to open:</strong></div>
+      ${shortcuts}
+      <div style="margin-top:8px;padding:7px 9px;background:#0a0c10;border-radius:6px;border-left:2px solid var(--acc);font-size:11.5px">
+        💡 ${info.tip}
+      </div>
+    </div>
+    <div class="lcard-foot">
+      <button class="launch-now-btn" id="${id}" onclick="(async()=>{const b=document.getElementById('${id}');const s=document.getElementById('${sid}');await launchNow('${app}','${icon}',b,s);})()">🚀 Launch ${app} Now</button>
+      <span class="launch-status" id="${sid}"></span>
+    </div>
+  </div>`;
+}
+
+// ── Sidebar chip: show info card then launch ───────────────────────────────────
+async function chipClick(app, icon) {
+  rmWelcome();
+  if (online) {
+    // Show info card with a Launch Now button
+    const card = buildInfoCard(app, icon);
+    addMsg('user', esc(`Open ${app}`));
+    addMsg('bot', `Here's everything about <strong>${app}</strong> before we open it:${card}`);
+  } else {
+    ask(`How do I open ${app} on Windows?`);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MAIN SEND — server AI first, built-in KB fallback
+// ════════════════════════════════════════════════════════════
+async function send() {
+  const text = $inp.value.trim();
+  if (!text || $sbtn.disabled) return;
+  $inp.value=''; $inp.style.height='auto'; $sbtn.disabled=true;
+
+  addMsg('user', esc(text));
+  const t = showTyping();
+
+  if (online) {
+    // ── SERVER PATH: full Claude AI via proxy ──────────────────────────────
+    hist.push({ role:'user', content:`[SERVER:online]\n\n${text}` });
+    try {
+      const data = await apiChat(hist);
+      t.remove();
+      if (!data.content) {
+        const err = data.error?.message || JSON.stringify(data);
+        addMsg('bot', `<div class="toast err">⚠ API error: ${esc(err)}</div>`);
+        hist.pop();
+      } else {
+        const reply = data.content[0]?.text || "Sorry, couldn't process that.";
+        hist.push({ role:'assistant', content: reply });
+        const bub = addMsg('bot', fmt(reply));
+        await flushLaunches(bub);
+      }
+    } catch {
+      t.remove();
+      addMsg('bot','<div class="toast err">⚠ Couldn\'t reach the server. Is Start Boltz.bat running?</div>');
+      hist.pop();
+    }
+  } else {
+    // ── OFFLINE PATH: built-in knowledge engine ────────────────────────────
+    // Simulate thinking delay for UX
+    await new Promise(r => setTimeout(r, 420));
+    t.remove();
+    const ans = smartRespond(text);
+    // Keep simple history for context display (no server needed)
+    hist.push({role:'user',content:text});
+    hist.push({role:'assistant',content:ans});
+    addMsg('bot', fmt(ans));
+  }
+
+  $sbtn.disabled=false; $inp.focus();
+}
+</script>
+</body>
+</html>
